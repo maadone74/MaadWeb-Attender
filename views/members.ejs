@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+
+<h1>Church Members</h1>
+<a href="/members/add" class="button">Add New Member</a>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Phone Number</th>
+            <th>Email</th>
+            <th>Member Since</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% members.forEach(member => { %>
+            <tr>
+                <td><%= member.lastName %></td>
+                <td><%= member.firstName %></td>
+                <td><%= member.phoneNumber %></td>
+                <td><%= member.email %></td>
+                <td><%= member.memberSince.toLocaleDateString() %></td>
+            </tr>
+        <% }) %>
+    </tbody>
+</table>
+
+<%- include('partials/footer') %>

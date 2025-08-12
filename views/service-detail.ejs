@@ -1,0 +1,47 @@
+<%- include('partials/header') %>
+
+<h1>Attendance for <%= service.topic %></h1>
+<p><strong>Date:</strong> <%= service.serviceDateTime.toLocaleString() %></p>
+<p><strong>Speaker:</strong> <%= service.speaker %></p>
+
+<form action="/attendance/mark" method="POST">
+    <input type="hidden" name="serviceId" value="<%= service._id %>">
+    
+    <h2>Mark Attendance</h2>
+    <div class="member-list">
+        <% allMembers.forEach(member => { %>
+            <div class="member-item">
+                <input 
+                    type="checkbox" 
+                    name="attendees" 
+                    value="<%= member._id %>" 
+                    id="member-<%= member._id %>"
+                    <%= attendedMemberIds.has(member._id.toString()) ? 'checked' : '' %>
+                >
+                <label for="member-<%= member._id %>">
+                    <%= member.lastName %>, <%= member.firstName %>
+                </label>
+            </div>
+        <% }) %>
+    </div>
+    
+    <button type="submit">Save Attendance</button>
+</form>
+
+<hr>
+
+<h2>Send Follow-up Messages</h2>
+<p>After saving attendance, you can send automated text messages.</p>
+<form action="/services/<%= service._id %>/send-sms" method="POST">
+    <button type="submit">Send SMS to All Members</button>
+</form>
+
+<% if (locals.sms_sent) { %>
+    <p style="color: green;">SMS messages have been queued for sending!</p>
+<% } %>
+<% if (locals.sms_error) { %>
+    <p style="color: red;">There was an error sending the SMS messages. Check the console.</p>
+<% } %>
+
+
+<%- include('partials/footer') %>

@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+
+<h1>Lapsed Member Report</h1>
+<p>This report shows active members who have not attended in a while, based on the following configurable levels:</p>
+<ul>
+    <li><strong>Level 1:</strong> > <%= lapseLevels.level1 %> days</li>
+    <li><strong>Level 2:</strong> > <%= lapseLevels.level2 %> days</li>
+    <li><strong>Level 3:</strong> > <%= lapseLevels.level3 %> days</li>
+    <li><strong>Level 4:</strong> > <%= lapseLevels.level4 %> days</li>
+</ul>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Lapse Level</th>
+            <th>Days Since Last Visit</th>
+            <th>Last Attended Date</th>
+            <th>Phone Number</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (lapsedMembers.length === 0) { %>
+            <tr>
+                <td colspan="5">Great news! No members are currently marked as lapsed.</td>
+            </tr>
+        <% } %>
+        <% lapsedMembers.forEach(item => { %>
+            <tr>
+                <td><%= item.info.firstName %> <%= item.info.lastName %></td>
+                <td>
+                    <span class="level-badge level-<%= item.level %>">
+                        Level <%= item.level %>
+                    </span>
+                </td>
+                <td><%= item.daysLapsed %></td>
+                <td><%= item.lastAttended ? item.lastAttended.toLocaleDateString() : 'Never' %></td>
+                <td><%= item.info.phoneNumber %></td>
+            </tr>
+        <% }) %>
+    </tbody>
+</table>
+
+<%- include('partials/footer') %>
