@@ -88,4 +88,55 @@ async function getLapsedMembers() {
     return lapsedMembers;
 }
 
-module.exports = { getLapsedMembers };
+async function getAbsentMembers(weeks) {
+    const allMembers = await Member.find({ isActive: true });
+    const lastAttendanceMap = await getLastAttendanceDates();
+    const now = new Date();
+    const daysAbsent = weeks * 7;
+
+    const absentMembers = [];
+
+    for (const member of allMembers) {
+        const lastAttended = lastAttendanceMap.get(member._id.toString());
+        let daysLapsed = Infinity;
+
+        if (lastAttended) {
+            const diffTime = now.getTime() - lastAttended.getTime();
+            daysLapsed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        if (daysLapsed >= daysAbsent) {
+            absentMembers.push({
+                info: member,
+                daysLapsed: daysLapsed === Infinity ? 'N/A' : daysLapsed,
+                lastAttended: lastAttended || null
+            });
+        }
+    }
+
+    absentMembers.sort((a, b) => b.daysLapsed - a.daysLapsed);
+
+    return absentMembers;
+}
+
+async function getFirstTimeAttendees(serviceId) {
+    const service = await Service.findById(serviceId);
+    if (!service) return [];
+
+    const attendanceRecords = await Attendance.find({ service: serviceId }).populate('member');
+    const firstTimeAttendees = [];
+
+    for (const record of attendanceRecords) {
+        if (record.member && record.member.firstVisit) {
+            const firstVisitDate = new Date(record.member.firstVisit).setHours(0,0,0,0);
+            const serviceDate = new Date(service.serviceDateTime).setHours(0,0,0,0);
+            if (firstVisitDate === serviceDate) {
+                firstTimeAttendees.push(record.member);
+            }
+        }
+    }
+
+    return firstTimeAttendees;
+}
+
+module.exports = { getLapsedMembers, getAbsentMembers, getFirstTimeAttendees };

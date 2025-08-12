@@ -1,14 +1,21 @@
 <%- include('partials/header') %>
-<h1>Dashboard</h1>
-<a href="/services/add" class="button">Create New Service</a>
-<h2>Recent Services</h2>
-<ul>
-    <% services.forEach(service => { %>
-        <li>
-            <a href="/services/<%= service._id %>">
-                <%= service.serviceDateTime.toLocaleString() %> - <%= service.topic %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Dashboard</h1>
+    <a href="/services/add" class="btn btn-primary">Create New Service</a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Recent Services</h2>
+    </div>
+    <div class="list-group list-group-flush">
+        <% services.forEach(service => { %>
+            <a href="/services/<%= service._id %>" class="list-group-item list-group-item-action">
+                <%= new Date(service.serviceDateTime).toLocaleString() %> - <%= service.topic %>
             </a>
-        </li>
-    <% }) %>
-</ul>
+        <% }) %>
+    </div>
+</div>
+
 <%- include('partials/footer') %>
