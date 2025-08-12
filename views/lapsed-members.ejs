@@ -2,15 +2,15 @@
 
 <h1>Lapsed Member Report</h1>
 <p>This report shows active members who have not attended in a while, based on the following configurable levels:</p>
-<ul>
-    <li><strong>Level 1:</strong> > <%= lapseLevels.level1 %> days</li>
-    <li><strong>Level 2:</strong> > <%= lapseLevels.level2 %> days</li>
-    <li><strong>Level 3:</strong> > <%= lapseLevels.level3 %> days</li>
-    <li><strong>Level 4:</strong> > <%= lapseLevels.level4 %> days</li>
+<ul class="list-inline">
+    <li class="list-inline-item"><strong>Level 1:</strong> > <%= lapseLevels.level1 %> days</li>
+    <li class="list-inline-item"><strong>Level 2:</strong> > <%= lapseLevels.level2 %> days</li>
+    <li class="list-inline-item"><strong>Level 3:</strong> > <%= lapseLevels.level3 %> days</li>
+    <li class="list-inline-item"><strong>Level 4:</strong> > <%= lapseLevels.level4 %> days</li>
 </ul>
 
-<table class="data-table">
-    <thead>
+<table class="table table-striped table-hover">
+    <thead class="table-dark">
         <tr>
             <th>Name</th>
             <th>Lapse Level</th>
@@ -22,19 +22,21 @@
     <tbody>
         <% if (lapsedMembers.length === 0) { %>
             <tr>
-                <td colspan="5">Great news! No members are currently marked as lapsed.</td>
+                <td colspan="5" class="text-center">Great news! No members are currently marked as lapsed.</td>
             </tr>
         <% } %>
-        <% lapsedMembers.forEach(item => { %>
+        <%
+        const levelColors = { 1: 'info', 2: 'warning', 3: 'danger', 4: 'dark' };
+        lapsedMembers.forEach(item => { %>
             <tr>
                 <td><%= item.info.firstName %> <%= item.info.lastName %></td>
                 <td>
-                    <span class="level-badge level-<%= item.level %>">
+                    <span class="badge bg-<%= levelColors[item.level] || 'secondary' %>">
                         Level <%= item.level %>
                     </span>
                 </td>
                 <td><%= item.daysLapsed %></td>
-                <td><%= item.lastAttended ? item.lastAttended.toLocaleDateString() : 'Never' %></td>
+                <td><%= item.lastAttended ? new Date(item.lastAttended).toLocaleDateString() : 'Never' %></td>
                 <td><%= item.info.phoneNumber %></td>
             </tr>
         <% }) %>

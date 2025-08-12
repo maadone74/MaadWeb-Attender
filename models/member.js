@@ -6,6 +6,7 @@ const memberSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
     email: { type: String },
     memberSince: { type: Date, default: Date.now },
+    firstVisit: { type: Date },
     isActive: { type: Boolean, default: true }
 });
 

@@ -3,23 +3,23 @@
 <h1>Create a New Service</h1>
 <p>Define a new service to begin tracking attendance for it.</p>
 
-<form action="/services/add" method="POST" class="data-form">
-    <div class="form-group">
-        <label for="serviceDate">Service Date</label>
-        <input type="datetime-local" id="serviceDate" name="serviceDate" required>
+<form action="/services/add" method="POST">
+    <div class="mb-3">
+        <label for="serviceDate" class="form-label">Service Date</label>
+        <input type="datetime-local" class="form-control" id="serviceDate" name="serviceDate" required>
     </div>
 
-    <div class="form-group">
-        <label for="topic">Sermon Topic / Service Name</label>
-        <input type="text" id="topic" name="topic" placeholder="e.g., Sunday Morning Worship" required>
+    <div class="mb-3">
+        <label for="topic" class="form-label">Sermon Topic / Service Name</label>
+        <input type="text" class="form-control" id="topic" name="topic" placeholder="e.g., Sunday Morning Worship" required>
     </div>
 
-    <div class="form-group">
-        <label for="speaker">Speaker</label>
-        <input type="text" id="speaker" name="speaker" placeholder="e.g., Pastor John Doe">
+    <div class="mb-3">
+        <label for="speaker" class="form-label">Speaker</label>
+        <input type="text" class="form-control" id="speaker" name="speaker" placeholder="e.g., Pastor John Doe">
     </div>
     
-    <button type="submit" class="button">Create Service</button>
+    <button type="submit" class="btn btn-primary">Create Service</button>
 </form>
 
 <%- include('partials/footer') %>

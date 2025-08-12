@@ -1,0 +1,56 @@
+<%- include('partials/header') %>
+
+<h1>Messaging Center</h1>
+<p>This page highlights members for follow-up based on their recent attendance.</p>
+
+<div class="row">
+    <!-- First-Time Attendees -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>First-Time Attendees <% if (recentService) { %>- <%= new Date(recentService.serviceDateTime).toLocaleDateString() %><% } %></h3>
+            </div>
+            <div class="card-body">
+                <% if (firstTimeAttendees.length > 0) { %>
+                    <ul class="list-group">
+                        <% firstTimeAttendees.forEach(member => { %>
+                            <li class="list-group-item">
+                                <%= member.firstName %> <%= member.lastName %>
+                                <span class="float-end"><%= member.phoneNumber %></span>
+                            </li>
+                        <% }); %>
+                    </ul>
+                <% } else { %>
+                    <p>No first-time attendees at the last service.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Absent Members -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>Absent for 3+ Weeks</h3>
+            </div>
+            <div class="card-body">
+                <% if (absentMembers.length > 0) { %>
+                    <ul class="list-group">
+                        <% absentMembers.forEach(item => { %>
+                            <li class="list-group-item">
+                                <%= item.info.firstName %> <%= item.info.lastName %>
+                                <span class="float-end text-muted">
+                                    Last seen: <%= item.lastAttended ? new Date(item.lastAttended).toLocaleDateString() : 'Never' %>
+                                </span>
+                            </li>
+                        <% }); %>
+                    </ul>
+                <% } else { %>
+                    <p>No members have been absent for 3 or more weeks.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
