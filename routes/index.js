@@ -9,6 +9,12 @@ const smsService = require('../services/smsService');
 const analysisService = require('../services/analysisService');
 const config = require('../config');
 
+// Apply user to all templates so it's available in the navbar
+router.use(function(req, res, next) {
+  res.locals.user = req.user;
+  next();
+});
+
 // --- Middleware to check if user is authenticated ---
 function isAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
@@ -40,13 +46,6 @@ router.get('/logout', (req, res, next) => {
         if (err) { return next(err); }
         res.redirect('/login');
     });
-});
-
-
-// Apply user to all templates
-router.use(function(req, res, next) {
-  res.locals.user = req.user;
-  next();
 });
 
 // --- Dashboard ---
