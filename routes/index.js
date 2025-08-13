@@ -156,10 +156,18 @@ router.post('/shepherd/send-sms', isAuthenticated, async (req, res) => {
 });
 
 // --- Service Routes ---
-router.get('/services', isAuthenticated, async (req, res) => {
+router.get('/servicescal', isAuthenticated, async (req, res) => {
     try {
-        const services = await Service.find();
-        res.render('services', { services });
+        let services = await Service.find();
+        // Ensure all serviceDateTime values are ISO strings for the calendar
+        // services = services.map(s => {
+        //     const obj = s.toObject ? s.toObject() : s;
+        //     return {
+        //         ...obj,
+        //         serviceDateTime: obj.serviceDateTime instanceof Date ? obj.serviceDateTime.toISOString() : new Date(obj.serviceDateTime).toISOString()
+        //     };
+        // });
+        res.render('servicescal');
     } catch (err) {
         res.status(500).send('Error loading services');
     }
@@ -171,7 +179,7 @@ router.post('/services/add', isAuthenticated, async (req, res) => {
     const { serviceDate, topic, speaker } = req.body;
     const newService = new Service({ serviceDate, topic, speaker });
     await newService.save();
-    res.redirect('/services');
+    res.redirect('/servicescal');
 });
 
 router.post('/services/update-date', isAuthenticated, async (req, res) => {
