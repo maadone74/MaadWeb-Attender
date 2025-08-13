@@ -1,7 +1,12 @@
 <%- include('partials/header') %>
 
 <div class="container mt-5">
-    <h1>Register</h1>
+    <h1>Register New User</h1>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+    <% } %>
+
     <form action="/register" method="POST">
         <div class="mb-3">
             <label for="username" class="form-label">Username</label>
@@ -11,6 +16,22 @@
             <label for="password" class="form-label">Password</label>
             <input type="password" class="form-control" id="password" name="password" required>
         </div>
+
+        <div class="mb-3">
+            <label for="memberId" class="form-label">Link to Member (Optional)</label>
+            <select class="form-select" id="memberId" name="memberId">
+                <option value="">None</option>
+                <% if (typeof unlinkedMembers !== 'undefined') { %>
+                    <% unlinkedMembers.forEach(member => { %>
+                        <option value="<%= member._id %>">
+                            <%= member.firstName %> <%= member.lastName %>
+                        </option>
+                    <% }) %>
+                <% } %>
+            </select>
+            <div class="form-text">Link this user account to a member. This is required for elders who need to access shepherd features.</div>
+        </div>
+
         <button type="submit" class="btn btn-primary">Register</button>
     </form>
 </div>

@@ -7,7 +7,9 @@ const memberSchema = new mongoose.Schema({
     email: { type: String },
     memberSince: { type: Date, default: Date.now },
     firstVisit: { type: Date },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    isElder: { type: Boolean, default: false },
+    shepherd: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' }
 });
 
 module.exports = mongoose.model('Member', memberSchema);
