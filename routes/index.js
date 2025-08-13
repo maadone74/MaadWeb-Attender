@@ -167,7 +167,7 @@ router.get('/servicecal', isAuthenticated, async (req, res) => {
         //         serviceDateTime: obj.serviceDateTime instanceof Date ? obj.serviceDateTime.toISOString() : new Date(obj.serviceDateTime).toISOString()
         //     };
         // });
-        res.render('servicecal');
+        res.render('servicecal', { services });
     } catch (err) {
         res.status(500).send('Error loading services');
     }
