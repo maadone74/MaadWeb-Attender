@@ -2,20 +2,11 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Dashboard</h1>
-    <a href="/services/add" class="btn btn-primary">Create New Service</a>
+    <a href="/servicescal" class="btn btn-primary">View Services Calendar</a>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <h2>Recent Services</h2>
-    </div>
-    <div class="list-group list-group-flush">
-        <% services.forEach(service => { %>
-            <a href="/services/<%= service._id %>" class="list-group-item list-group-item-action">
-                <%= new Date(service.serviceDateTime).toLocaleString() %> - <%= service.topic %>
-            </a>
-        <% }) %>
-    </div>
+<div class="alert alert-info">
+    Welcome to the Church Attendance App. You can manage members, services, and attendance from the navigation bar.
 </div>
 
 <%- include('partials/footer') %>
