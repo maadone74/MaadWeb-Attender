@@ -1,0 +1,51 @@
+<%- include('partials/header') %>
+
+<h1>Edit Member: <%= member.firstName %> <%= member.lastName %></h1>
+
+<form action="/members/edit/<%= member._id %>?_method=POST" method="POST">
+    <div class="mb-3">
+        <label for="firstName" class="form-label">First Name</label>
+        <input type="text" class="form-control" id="firstName" name="firstName" value="<%= member.firstName %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="lastName" class="form-label">Last Name</label>
+        <input type="text" class="form-control" id="lastName" name="lastName" value="<%= member.lastName %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="phoneNumber" class="form-label">Phone Number</label>
+        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" value="<%= member.phoneNumber %>" placeholder="+15551234567" required>
+        <div class="form-text">Use international format for SMS (e.g., +1 for USA).</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" value="<%= member.email %>">
+    </div>
+
+    <hr>
+
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="isElder" name="isElder" <%= member.isElder ? 'checked' : '' %>>
+        <label class="form-check-label" for="isElder">This member is an Elder</label>
+    </div>
+
+    <div class="mb-3">
+        <label for="shepherd" class="form-label">Shepherd</label>
+        <select class="form-select" id="shepherd" name="shepherd">
+            <option value="">None</option>
+            <% elders.forEach(elder => { %>
+                <option value="<%= elder._id %>" <%= (member.shepherd && member.shepherd.equals(elder._id)) ? 'selected' : '' %>>
+                    <%= elder.firstName %> <%= elder.lastName %>
+                </option>
+            <% }) %>
+        </select>
+        <div class="form-text">Assign an elder to shepherd this member.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a href="/members" class="btn btn-secondary">Cancel</a>
+</form>
+
+<%- include('partials/footer') %>

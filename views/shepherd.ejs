@@ -1,0 +1,65 @@
+<%- include('partials/header') %>
+
+<h1>Shepherd's Dashboard</h1>
+<p>Welcome, <%= elder.firstName %>. Here are the members you are shepherding.</p>
+
+<% if (typeof success !== 'undefined' && success === 'sms_sent') { %>
+    <div class="alert alert-success">SMS messages sent successfully!</div>
+<% } %>
+<% if (typeof error !== 'undefined' && error === 'no_recipients') { %>
+    <div class="alert alert-danger">You must select at least one recipient.</div>
+<% } %>
+<% if (typeof error !== 'undefined' && error === 'send_failed') { %>
+    <div class="alert alert-danger">There was an error sending the SMS messages. Please try again.</div>
+<% } %>
+
+<form action="/shepherd/send-sms" method="POST">
+    <div class="card">
+        <div class="card-header">
+            Your Flock
+        </div>
+        <div class="card-body">
+            <% if (shepherdedMembers.length > 0) { %>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Message</label>
+                    <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3">Send SMS to Selected</button>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><input class="form-check-input" type="checkbox" id="selectAll"></th>
+                            <th>Name</th>
+                            <th>Phone Number</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% shepherdedMembers.forEach(member => { %>
+                            <tr>
+                                <td><input class="form-check-input" type="checkbox" name="recipients" value="<%= member._id %>"></td>
+                                <td><%= member.firstName %> <%= member.lastName %></td>
+                                <td><%= member.phoneNumber %></td>
+                                <td><%= member.email %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <p>You are not currently shepherding any members.</p>
+            <% } %>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.getElementById('selectAll').addEventListener('click', function(event) {
+        const checkboxes = document.querySelectorAll('input[name="recipients"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = event.target.checked;
+        });
+    });
+</script>
+
+<%- include('partials/footer') %>
