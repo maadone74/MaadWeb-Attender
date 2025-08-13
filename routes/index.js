@@ -156,12 +156,33 @@ router.post('/shepherd/send-sms', isAuthenticated, async (req, res) => {
 });
 
 // --- Service Routes ---
+router.get('/services', isAuthenticated, async (req, res) => {
+    try {
+        const services = await Service.find();
+        res.render('services', { services });
+    } catch (err) {
+        res.status(500).send('Error loading services');
+    }
+});
+
 router.get('/services/add', isAuthenticated, (req, res) => res.render('add-service'));
+
 router.post('/services/add', isAuthenticated, async (req, res) => {
     const { serviceDate, topic, speaker } = req.body;
     const newService = new Service({ serviceDate, topic, speaker });
     await newService.save();
-    res.redirect('/');
+    res.redirect('/services');
+});
+
+router.post('/services/update-date', isAuthenticated, async (req, res) => {
+    try {
+        const { serviceId, newDate } = req.body;
+        await Service.findByIdAndUpdate(serviceId, { serviceDateTime: newDate });
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error updating service date:', err);
+        res.status(500).json({ success: false });
+    }
 });
 
 // --- Attendance Tracking Route (The Core) ---
