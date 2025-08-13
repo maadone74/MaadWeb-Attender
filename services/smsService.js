@@ -42,4 +42,19 @@ async function sendAttendanceFollowUps(serviceId) {
     return Promise.all(promises);
 }
 
-module.exports = { sendAttendanceFollowUps };
+async function sendBulkSms(recipientIds, message) {
+    const members = await Member.find({ '_id': { $in: recipientIds } });
+
+    const promises = members.map(member => {
+        return client.messages.create({
+            body: message,
+            from: twilioPhoneNumber,
+            to: member.phoneNumber
+        }).then(message => ({ success: true, sid: message.sid, memberName: `${member.firstName} ${member.lastName}` }))
+          .catch(err => ({ success: false, error: err.message, memberName: `${member.firstName} ${member.lastName}` }));
+    });
+
+    return Promise.all(promises);
+}
+
+module.exports = { sendAttendanceFollowUps, sendBulkSms };

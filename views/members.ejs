@@ -13,6 +13,7 @@
             <th>Phone Number</th>
             <th>Email</th>
             <th>Member Since</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -23,6 +24,9 @@
                 <td><%= member.phoneNumber %></td>
                 <td><%= member.email %></td>
                 <td><%= new Date(member.memberSince).toLocaleDateString() %></td>
+                <td>
+                    <a href="/members/edit/<%= member._id %>" class="btn btn-sm btn-outline-primary">Edit</a>
+                </td>
             </tr>
         <% }) %>
     </tbody>

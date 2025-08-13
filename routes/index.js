@@ -30,15 +30,29 @@ router.post('/login', passport.authenticate('local', {
     failureRedirect: '/login',
     failureFlash: false // Or use true and configure connect-flash
 }));
-router.get('/register', (req, res) => res.render('register'));
-router.post('/register', async (req, res) => {
+router.get('/register', isAuthenticated, async (req, res) => {
     try {
-        const { username, password } = req.body;
-        const user = new User({ username, password });
+        const usersWithMembers = await User.find({ member: { $ne: null } }).select('member');
+        const linkedMemberIds = usersWithMembers.map(u => u.member);
+        const unlinkedMembers = await Member.find({ _id: { $nin: linkedMemberIds }, isActive: true });
+        res.render('register', { unlinkedMembers, error: null });
+    } catch (err) {
+        console.error("Error loading registration page:", err);
+        res.status(500).send("Error loading page");
+    }
+});
+
+router.post('/register', isAuthenticated, async (req, res) => {
+    try {
+        const { username, password, memberId } = req.body;
+        const user = new User({ username, password, member: memberId || null });
         await user.save();
         res.redirect('/login');
     } catch (err) {
-        res.render('register', { error: 'Error registering. Username might be taken.' });
+        const usersWithMembers = await User.find({ member: { $ne: null } }).select('member');
+        const linkedMemberIds = usersWithMembers.map(u => u.member);
+        const unlinkedMembers = await Member.find({ _id: { $nin: linkedMemberIds }, isActive: true });
+        res.render('register', { unlinkedMembers, error: 'Error registering. Username might be taken.' });
     }
 });
 router.get('/logout', (req, res, next) => {
@@ -69,6 +83,76 @@ router.post('/members/add', isAuthenticated, async (req, res) => {
     const newMember = new Member({ firstName, lastName, phoneNumber, email });
     await newMember.save();
     res.redirect('/members');
+});
+
+// Show edit member form
+router.get('/members/edit/:id', isAuthenticated, async (req, res) => {
+    try {
+        const member = await Member.findById(req.params.id);
+        const elders = await Member.find({ isElder: true, isActive: true });
+        res.render('edit-member', { member, elders });
+    } catch (err) {
+        console.error("Error loading member for edit:", err);
+        res.status(500).send("Error loading page");
+    }
+});
+
+// Handle edit member form
+router.post('/members/edit/:id', isAuthenticated, async (req, res) => {
+    try {
+        const { firstName, lastName, phoneNumber, email, isElder, shepherd } = req.body;
+        await Member.findByIdAndUpdate(req.params.id, {
+            firstName,
+            lastName,
+            phoneNumber,
+            email,
+            isElder: !!isElder,
+            shepherd: shepherd || null
+        });
+        res.redirect('/members');
+    } catch (err) {
+        console.error("Error updating member:", err);
+        res.status(500).send("Error updating member");
+    }
+});
+
+// --- Shepherd's Dashboard ---
+router.get('/shepherd', isAuthenticated, async (req, res) => {
+    try {
+        if (!req.user.member || !req.user.member.isElder) {
+            return res.status(403).send('You are not authorized to view this page.');
+        }
+
+        const shepherdedMembers = await Member.find({ shepherd: req.user.member._id, isActive: true });
+
+        res.render('shepherd', {
+            elder: req.user.member,
+            shepherdedMembers: shepherdedMembers,
+            error: req.query.error,
+            success: req.query.success
+        });
+    } catch (err) {
+        console.error("Error loading shepherd dashboard:", err);
+        res.status(500).send("Error loading dashboard");
+    }
+});
+
+router.post('/shepherd/send-sms', isAuthenticated, async (req, res) => {
+    try {
+        const { message, recipients } = req.body;
+
+        if (!recipients || recipients.length === 0) {
+            return res.redirect('/shepherd?error=no_recipients');
+        }
+
+        const recipientIds = Array.isArray(recipients) ? recipients : [recipients];
+        await smsService.sendBulkSms(recipientIds, message);
+
+        res.redirect('/shepherd?success=sms_sent');
+    } catch (err) {
+        console.error("Error sending shepherd SMS:", err);
+        res.redirect('/shepherd?error=send_failed');
+    }
 });
 
 // --- Service Routes ---
