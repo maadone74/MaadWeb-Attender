@@ -18,8 +18,8 @@
                 <ul class="navbar-nav me-auto">
                     <% if (user) { %>
                         <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
                         <li class="nav-item"><a class="nav-link" href="/members">Members</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/services/add">New Service</a></li>
                         <li class="nav-item"><a class="nav-link" href="/messaging">Messaging</a></li>
                         <li class="nav-item"><a class="nav-link" href="/reports/lapsed-members">Lapsed Report</a></li>
                         <% if (user.member && user.member.isElder) { %>
