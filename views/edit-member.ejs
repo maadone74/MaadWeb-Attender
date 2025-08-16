@@ -2,7 +2,15 @@
 
 <h1>Edit Member: <%= member.firstName %> <%= member.lastName %></h1>
 
-<form action="/members/edit/<%= member._id %>?_method=POST" method="POST">
+<% if (member.picture) { %>
+    <img src="/<%= member.picture %>" alt="Profile picture of <%= member.firstName %>" style="max-width: 150px; display: block; margin-bottom: 1rem;">
+<% } %>
+
+<form action="/members/edit/<%= member._id %>?_method=POST" method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="picture" class="form-label">Change Profile Picture</label>
+        <input type="file" class="form-control" id="picture" name="picture" accept="image/jpeg, image/png">
+    </div>
     <div class="mb-3">
         <label for="firstName" class="form-label">First Name</label>
         <input type="text" class="form-control" id="firstName" name="firstName" value="<%= member.firstName %>" required>

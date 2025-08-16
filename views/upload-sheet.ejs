@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+
+<h1>Upload Member Data Sheet</h1>
+<p>Upload a spreadsheet (Excel .xlsx) with member data. The sheet should have the following columns in this order: FirstName, LastName, PhoneNumber, Email.</p>
+<p>The system will check for existing members based on their phone number and only add new members.</p>
+
+<% if (typeof msg !== 'undefined') { %>
+    <div class="alert alert-info"><%= msg %></div>
+<% } %>
+
+<form action="/members/upload" method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="sheet" class="form-label">Member Data File</label>
+        <input type="file" class="form-control" id="sheet" name="sheet" required accept=".xlsx">
+    </div>
+    <button type="submit" class="btn btn-primary">Upload and Process</button>
+</form>
+
+<%- include('partials/footer') %>
