@@ -156,18 +156,18 @@ router.post('/shepherd/send-sms', isAuthenticated, async (req, res) => {
 });
 
 // --- Service Routes ---
-router.get('/servicescal', isAuthenticated, async (req, res) => {
+router.get('/servicecal', isAuthenticated, async (req, res) => {
     try {
         let services = await Service.find();
         // Ensure all serviceDateTime values are ISO strings for the calendar
-        // services = services.map(s => {
-        //     const obj = s.toObject ? s.toObject() : s;
-        //     return {
-        //         ...obj,
-        //         serviceDateTime: obj.serviceDateTime instanceof Date ? obj.serviceDateTime.toISOString() : new Date(obj.serviceDateTime).toISOString()
-        //     };
-        // });
-        res.render('servicescal');
+        services = services.map(s => {
+             const obj = s.toObject ? s.toObject() : s;
+           return {
+                ...obj,
+                serviceDateTime: obj.serviceDateTime instanceof Date ? obj.serviceDateTime.toISOString() : new Date(obj.serviceDateTime).toISOString()
+             };
+         });
+        res.render('servicecal', { services });
     } catch (err) {
         res.status(500).send('Error loading services');
     }
@@ -179,7 +179,7 @@ router.post('/services/add', isAuthenticated, async (req, res) => {
     const { serviceDate, topic, speaker } = req.body;
     const newService = new Service({ serviceDate, topic, speaker });
     await newService.save();
-    res.redirect('/servicescal');
+    res.redirect('/servicecal');
 });
 
 router.post('/services/update-date', isAuthenticated, async (req, res) => {
@@ -286,6 +286,5 @@ router.get('/messaging', isAuthenticated, async (req, res) => {
         res.status(500).send("Failed to load messaging page.");
     }
 });
-
 
 module.exports = router;
