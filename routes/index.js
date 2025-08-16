@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const xlsx = require('xlsx');
 const Member = require('../models/member');
+const Visitor = require('../models/visitor');
 const Service = require('../models/service');
 const Attendance = require('../models/attendance');
 const User = require('../models/user');
@@ -120,11 +121,20 @@ router.get('/', isAuthenticated, async (req, res) => {
     }
 });
 
-// --- Member Routes ---
-router.get('/members', isAuthenticated, async (req, res) => {
-    const members = await Member.find({ isActive: true });
-    res.render('members', { members });
+// --- People Page ---
+router.get('/people', isAuthenticated, async (req, res) => {
+    try {
+        const members = await Member.find({ isActive: true });
+        const visitors = await Visitor.find();
+        const users = await User.find().populate('member');
+        res.render('people', { members, visitors, users });
+    } catch (err) {
+        console.error("Error loading people page:", err);
+        res.status(500).send("Error loading page");
+    }
 });
+
+// --- Member Routes ---
 
 router.get('/members/upload', isAuthenticated, (req, res) => {
     res.render('upload-sheet');
@@ -169,6 +179,64 @@ router.post('/members/upload', isAuthenticated, (req, res) => {
     });
 });
 
+
+router.post('/services/:id/upload-attendance', isAuthenticated, (req, res) => {
+    sheetUpload(req, res, async (err) => {
+        if (err) {
+            return res.redirect(`/services/${req.params.id}?error=${err}`);
+        }
+        if (req.file == undefined) {
+            return res.redirect(`/services/${req.params.id}?error=No file selected`);
+        }
+
+        const serviceId = req.params.id;
+        const workbook = xlsx.readFile(req.file.path);
+        const sheet_name_list = workbook.SheetNames;
+        const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+
+        let newVisitors = 0;
+        let newAttendees = 0;
+
+        for (const row of data) {
+            const { FirstName, LastName, PhoneNumber, Email } = row;
+            if (!PhoneNumber) continue;
+
+            let member = await Member.findOne({ phoneNumber: PhoneNumber });
+            if (member) {
+                // Existing member, just mark attendance
+                const existingAttendance = await Attendance.findOne({ service: serviceId, member: member._id });
+                if (!existingAttendance) {
+                    const attendance = new Attendance({ service: serviceId, member: member._id });
+                    await attendance.save();
+                    newAttendees++;
+                }
+            } else {
+                // New visitor
+                let visitor = await Visitor.findOne({ phoneNumber: PhoneNumber });
+                if (!visitor) {
+                    visitor = new Visitor({
+                        firstName: FirstName,
+                        lastName: LastName,
+                        phoneNumber: PhoneNumber,
+                        email: Email
+                    });
+                    await visitor.save();
+                    newVisitors++;
+                }
+                // Mark attendance for the visitor
+                const existingAttendance = await Attendance.findOne({ service: serviceId, visitor: visitor._id });
+                if (!existingAttendance) {
+                    const attendance = new Attendance({ service: serviceId, visitor: visitor._id });
+                    await attendance.save();
+                    newAttendees++;
+                }
+            }
+        }
+
+        res.redirect(`/services/${serviceId}?msg=Processed ${data.length} rows. Added ${newAttendees} attendees and ${newVisitors} new visitors.`);
+    });
+});
+
 router.get('/members/add', isAuthenticated, (req, res) => res.render('add-member'));
 router.post('/members/add', isAuthenticated, (req, res) => {
     upload(req, res, async (err) => {
@@ -184,7 +252,7 @@ router.post('/members/add', isAuthenticated, (req, res) => {
                 picture: req.file ? `uploads/${req.file.filename}` : null
             });
             await newMember.save();
-            res.redirect('/members');
+            res.redirect('/people');
         }
     });
 });
@@ -223,7 +291,7 @@ router.post('/members/edit/:id', isAuthenticated, (req, res) => {
                 }
 
                 await Member.findByIdAndUpdate(req.params.id, updateData);
-                res.redirect('/members');
+                res.redirect('/people');
             } catch (err) {
                 console.error("Error updating member:", err);
                 res.status(500).send("Error updating member");
@@ -292,8 +360,8 @@ router.get('/servicecal', isAuthenticated, async (req, res) => {
 router.get('/services/add', isAuthenticated, (req, res) => res.render('add-service'));
 
 router.post('/services/add', isAuthenticated, async (req, res) => {
-    const { serviceDate, topic, speaker } = req.body;
-    const newService = new Service({ serviceDate, topic, speaker });
+    const { serviceDateTime, topic, speaker } = req.body;
+    const newService = new Service({ serviceDateTime, topic, speaker });
     await newService.save();
     res.redirect('/servicecal');
 });
