@@ -287,10 +287,4 @@ router.get('/messaging', isAuthenticated, async (req, res) => {
     }
 });
 
-// --- Diagnostic Test Route ---
-router.get('/test', (req, res) => {
-    res.send('Test route is working!');
-});
-
-
 module.exports = router;
