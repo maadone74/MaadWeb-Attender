@@ -9,7 +9,8 @@ const memberSchema = new mongoose.Schema({
     firstVisit: { type: Date },
     isActive: { type: Boolean, default: true },
     isElder: { type: Boolean, default: false },
-    shepherd: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' }
+    shepherd: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' },
+    picture: { type: String }
 });
 
 module.exports = mongoose.model('Member', memberSchema);

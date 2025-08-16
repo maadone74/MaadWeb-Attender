@@ -2,12 +2,16 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Church Members</h1>
-    <a href="/members/add" class="btn btn-primary">Add New Member</a>
+    <div>
+        <a href="/members/upload" class="btn btn-success">Upload Sheet</a>
+        <a href="/members/add" class="btn btn-primary">Add New Member</a>
+    </div>
 </div>
 
 <table class="table table-striped table-hover">
     <thead class="table-dark">
         <tr>
+            <th>Picture</th>
             <th>Last Name</th>
             <th>First Name</th>
             <th>Phone Number</th>
@@ -19,6 +23,13 @@
     <tbody>
         <% members.forEach(member => { %>
             <tr>
+                <td>
+                    <% if (member.picture) { %>
+                        <img src="/<%= member.picture %>" alt="Photo of <%= member.firstName %>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                    <% } else { %>
+                        <div style="width: 50px; height: 50px; background-color: #ccc; border-radius: 50%;"></div>
+                    <% } %>
+                </td>
                 <td><%= member.lastName %></td>
                 <td><%= member.firstName %></td>
                 <td><%= member.phoneNumber %></td>

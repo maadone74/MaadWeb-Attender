@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
+const multer = require('multer');
+const path = require('path');
+const xlsx = require('xlsx');
 const Member = require('../models/member');
 const Service = require('../models/service');
 const Attendance = require('../models/attendance');
@@ -8,6 +11,51 @@ const User = require('../models/user');
 const smsService = require('../services/smsService');
 const analysisService = require('../services/analysisService');
 const config = require('../config');
+
+// --- Multer Setup for File Uploads ---
+const storage = multer.diskStorage({
+    destination: './public/uploads/',
+    filename: function(req, file, cb){
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10000000 }, // 10MB limit
+    fileFilter: function(req, file, cb){
+        checkFileType(file, cb);
+    }
+}).single('picture');
+
+const sheetUpload = multer({
+    storage: storage,
+    fileFilter: function(req, file, cb){
+        checkSheetType(file, cb);
+    }
+}).single('sheet');
+
+function checkSheetType(file, cb){
+    const filetypes = /xlsx/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if(extname){
+        return cb(null,true);
+    } else {
+        cb('Error: Excel files Only!');
+    }
+}
+
+function checkFileType(file, cb){
+    const filetypes = /jpeg|jpg|png/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if(mimetype && extname){
+        return cb(null,true);
+    } else {
+        cb('Error: Images Only!');
+    }
+}
 
 // Apply user to all templates so it's available in the navbar
 router.use(function(req, res, next) {
@@ -77,12 +125,68 @@ router.get('/members', isAuthenticated, async (req, res) => {
     const members = await Member.find({ isActive: true });
     res.render('members', { members });
 });
+
+router.get('/members/upload', isAuthenticated, (req, res) => {
+    res.render('upload-sheet');
+});
+
+router.post('/members/upload', isAuthenticated, (req, res) => {
+    sheetUpload(req, res, async (err) => {
+        if (err) {
+            return res.render('upload-sheet', { msg: err });
+        }
+        if (req.file == undefined) {
+            return res.render('upload-sheet', { msg: 'Error: No File Selected!' });
+        }
+
+        const workbook = xlsx.readFile(req.file.path);
+        const sheet_name_list = workbook.SheetNames;
+        const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+
+        let newMembers = 0;
+        let existingMembers = 0;
+
+        for (const row of data) {
+            const { FirstName, LastName, PhoneNumber, Email } = row;
+            if (!PhoneNumber) continue;
+
+            const existingMember = await Member.findOne({ phoneNumber: PhoneNumber });
+            if (!existingMember) {
+                const newMember = new Member({
+                    firstName: FirstName,
+                    lastName: LastName,
+                    phoneNumber: PhoneNumber,
+                    email: Email
+                });
+                await newMember.save();
+                newMembers++;
+            } else {
+                existingMembers++;
+            }
+        }
+
+        res.render('upload-sheet', { msg: `File processed. Added ${newMembers} new members. Found ${existingMembers} existing members.` });
+    });
+});
+
 router.get('/members/add', isAuthenticated, (req, res) => res.render('add-member'));
-router.post('/members/add', isAuthenticated, async (req, res) => {
-    const { firstName, lastName, phoneNumber, email } = req.body;
-    const newMember = new Member({ firstName, lastName, phoneNumber, email });
-    await newMember.save();
-    res.redirect('/members');
+router.post('/members/add', isAuthenticated, (req, res) => {
+    upload(req, res, async (err) => {
+        if(err){
+            res.render('add-member', { msg: err });
+        } else {
+            const { firstName, lastName, phoneNumber, email } = req.body;
+            const newMember = new Member({
+                firstName,
+                lastName,
+                phoneNumber,
+                email,
+                picture: req.file ? `uploads/${req.file.filename}` : null
+            });
+            await newMember.save();
+            res.redirect('/members');
+        }
+    });
 });
 
 // Show edit member form
@@ -98,22 +202,34 @@ router.get('/members/edit/:id', isAuthenticated, async (req, res) => {
 });
 
 // Handle edit member form
-router.post('/members/edit/:id', isAuthenticated, async (req, res) => {
-    try {
-        const { firstName, lastName, phoneNumber, email, isElder, shepherd } = req.body;
-        await Member.findByIdAndUpdate(req.params.id, {
-            firstName,
-            lastName,
-            phoneNumber,
-            email,
-            isElder: !!isElder,
-            shepherd: shepherd || null
-        });
-        res.redirect('/members');
-    } catch (err) {
-        console.error("Error updating member:", err);
-        res.status(500).send("Error updating member");
-    }
+router.post('/members/edit/:id', isAuthenticated, (req, res) => {
+    upload(req, res, async (err) => {
+        if(err){
+            res.redirect(`/members/edit/${req.params.id}?error=${err}`);
+        } else {
+            try {
+                const { firstName, lastName, phoneNumber, email, isElder, shepherd } = req.body;
+                let updateData = {
+                    firstName,
+                    lastName,
+                    phoneNumber,
+                    email,
+                    isElder: !!isElder,
+                    shepherd: shepherd || null
+                };
+
+                if (req.file) {
+                    updateData.picture = `uploads/${req.file.filename}`;
+                }
+
+                await Member.findByIdAndUpdate(req.params.id, updateData);
+                res.redirect('/members');
+            } catch (err) {
+                console.error("Error updating member:", err);
+                res.status(500).send("Error updating member");
+            }
+        }
+    });
 });
 
 // --- Shepherd's Dashboard ---
