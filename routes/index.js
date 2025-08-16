@@ -160,13 +160,13 @@ router.get('/servicecal', isAuthenticated, async (req, res) => {
     try {
         let services = await Service.find();
         // Ensure all serviceDateTime values are ISO strings for the calendar
-        // services = services.map(s => {
-        //     const obj = s.toObject ? s.toObject() : s;
-        //     return {
-        //         ...obj,
-        //         serviceDateTime: obj.serviceDateTime instanceof Date ? obj.serviceDateTime.toISOString() : new Date(obj.serviceDateTime).toISOString()
-        //     };
-        // });
+        services = services.map(s => {
+             const obj = s.toObject ? s.toObject() : s;
+           return {
+                ...obj,
+                serviceDateTime: obj.serviceDateTime instanceof Date ? obj.serviceDateTime.toISOString() : new Date(obj.serviceDateTime).toISOString()
+             };
+         });
         res.render('servicecal', { services });
     } catch (err) {
         res.status(500).send('Error loading services');
