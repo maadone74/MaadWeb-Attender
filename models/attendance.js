@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 
 const attendanceSchema = new mongoose.Schema({
-    member: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true },
+    member: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' },
+    visitor: { type: mongoose.Schema.Types.ObjectId, ref: 'Visitor' },
     service: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true }
 });
 
-// Ensure a member can only be marked as present once per service
-attendanceSchema.index({ member: 1, service: 1 }, { unique: true });
+// Ensure a person (member or visitor) can only be marked as present once per service
+attendanceSchema.index({ service: 1, member: 1 }, { unique: true, partialFilterExpression: { member: { $exists: true } } });
+attendanceSchema.index({ service: 1, visitor: 1 }, { unique: true, partialFilterExpression: { visitor: { $exists: true } } });
 
 module.exports = mongoose.model('Attendance', attendanceSchema);
 

@@ -11,7 +11,7 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-6">
         <form action="/attendance/mark" method="POST">
             <input type="hidden" name="serviceId" value="<%= service._id %>">
 
@@ -36,7 +36,23 @@
             </div>
         </form>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h2>Upload Attendance Sheet</h2>
+            </div>
+            <div class="card-body">
+                <form action="/services/<%= service._id %>/upload-attendance" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="sheet" class="form-label">Select Excel File</label>
+                        <input class="form-control" type="file" id="sheet" name="sheet" accept=".xlsx">
+                    </div>
+                    <button type="submit" class="btn btn-info">Upload Sheet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
         <div class="card">
             <div class="card-header">
                 <h2>Follow-up Messages</h2>
